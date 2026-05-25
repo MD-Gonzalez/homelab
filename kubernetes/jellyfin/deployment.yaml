@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jellyfin
+  template:
+    metadata:
+      labels:
+        app: jellyfin
+    spec:
+      containers:
+      - name: jellyfin
+        image: jellyfin/latest
+        ports:
+        - containerPort: 8096
+        env:
+        - name: JELLYFIN_PublishedServerUrl
+          value: https://tv.sigilos.st
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: cache
+          mountPath: /cache
+        - name: movies
+          mountPath: /movies
+        - name: tv
+          mountPath: /tv
+        - name: anime
+          mountPath: /anime
+        - name: music
+          mountPath: /music
+          readOnly: true
+        - name: downloads
+          mountPath: /downloads
+      volumes:
+      - name: config
+        hostPath:
+          path: /var/lib/k8s/jellyfin/config
+      - name: cache
+        hostPath:
+          path: /var/lib/k8s/jellyfin/cache
+      - name: movies
+        hostPath:
+          path: /media/movies
+      - name: tv
+        hostPath:
+          path: /media/tv
+      - name: anime
+        hostPath:
+          path: /media/anime
+      - name: music
+        hostPath:
+          path: /media/music
+      - name: downloads
+        hostPath:
+          path: /media/downloads/incomplete

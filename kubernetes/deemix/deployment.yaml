@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deemix
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deemix
+  template:
+    metadata:
+      labels:
+        app: deemix
+    spec:
+      containers:
+      - name: deemix
+        image: registry.gitlab.com/bockiii/deemix-docker:latest
+        ports:
+        - containerPort: 6595
+        env:
+        - name: ARL
+          valueFrom:
+            secretKeyRef:
+              name: deemix-arl
+              key: arl
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "100"
+        - name: TZ
+          value: "America/Argentina/Buenos_Aires"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: downloads
+          mountPath: /downloads
+      volumes:
+      - name: config
+        hostPath:
+          path: /var/lib/k8s/deemix
+      - name: downloads
+        hostPath:
+          path: /media/downloads/complete

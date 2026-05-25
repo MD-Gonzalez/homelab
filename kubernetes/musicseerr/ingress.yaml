@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: musicseerr
+  namespace: homelab
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - rmusic.sigilos.st
+    secretName: rmusic-sigilos-st-tls
+  rules:
+  - host: rmusic.sigilos.st
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: musicseerr
+            port:
+              number: 8688

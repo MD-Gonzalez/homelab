@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: diun
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: diun
+  template:
+    metadata:
+      labels:
+        app: diun
+    spec:
+      serviceAccountName: diun
+      containers:
+      - name: diun
+        image: crazymax/diun:latest
+        env:
+        - name: DIUN_PROVIDERS_KUBERNETES_WATCHBYDEFAULT
+          value: "true"
+        - name: DIUN_PROVIDERS_KUBERNETES_NAMESPACES
+          value: "homelab"
+        - name: TZ
+          value: "America/Argentina/Buenos_Aires"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: DIUN_WATCH_WORKERS
+          value: "20"
+        - name: DIUN_WATCH_SCHEDULE
+          value: "0 6 * * *"
+        - name: DIUN_PROVIDERS_KUBERNETES
+          value: "true"
+        - name: DIUN_NOTIF_NTFY_ENDPOINT
+          value: "http://10.43.109.119"
+        - name: DIUN_NOTIF_NTFY_TOPIC
+          value: "homelab-updates"
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: kubeconfig
+          mountPath: /root/.kube
+      volumes:
+      - name: data
+        hostPath:
+          path: /var/lib/k8s/diun
+      - name: kubeconfig
+        hostPath:
+          path: /etc/rancher/k3s

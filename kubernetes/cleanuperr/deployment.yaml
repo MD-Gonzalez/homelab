@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cleanuperr
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cleanuperr
+  template:
+    metadata:
+      labels:
+        app: cleanuperr
+    spec:
+      containers:
+      - name: cleanuperr
+        image: ghcr.io/flmorg/cleanuperr:latest
+        env:
+        - name: TZ
+          value: "America/Argentina/Buenos_Aires"
+        - name: SONARR__ENABLED
+          value: "true"
+        - name: SONARR__URL
+          value: "http://sonarr.homelab.svc.cluster.local:8989"
+        - name: SONARR__APIKEY
+          value: "23ac1761022d4ceba0292286aa2f660c"
+        - name: RADARR__ENABLED
+          value: "true"
+        - name: RADARR__URL
+          value: "http://radarr.homelab.svc.cluster.local:7878"
+        - name: RADARR__APIKEY
+          value: "400257337caf4ff589dd257526f40f9c"
+        - name: QUEUECLEANER__ENABLED
+          value: "true"
+        - name: QUEUECLEANER__RUNINTERVALCRON
+          value: "0 * * * *"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+      volumes:
+      - name: config
+        hostPath:
+          path: /var/lib/k8s/cleanuperr

@@ -1,0 +1,152 @@
+<svg width="100%" viewBox="0 0 680 820" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Homelab infrastructure architecture diagram</title>
+<desc>Network diagram showing internet traffic flowing through a VPS and OpenBSD router via WireGuard VPN to a NixOS k3s cluster, Proxmox server, desktop, and laptop on the LAN</desc>
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <style>
+    text { font-family: sans-serif; fill: #1a1a2e; }
+    .th { font-size: 14px; font-weight: 500; }
+    .ts { font-size: 12px; font-weight: 400; fill: #3a3a5c; }
+    .arr { stroke: #888; stroke-width: 1.5; fill: none; }
+    /* Blue - network/security */
+    .c-blue rect { fill: #E6F1FB; stroke: #185FA5; }
+    .c-blue text { fill: #0C447C; }
+    .c-blue .ts { fill: #185FA5; }
+    /* Teal - compute */
+    .c-teal rect { fill: #E1F5EE; stroke: #0F6E56; }
+    .c-teal text { fill: #085041; }
+    .c-teal .ts { fill: #0F6E56; }
+    /* Purple - services */
+    .c-purple rect { fill: #EEEDFE; stroke: #534AB7; }
+    .c-purple text { fill: #3C3489; }
+    .c-purple .ts { fill: #534AB7; }
+    /* Gray - storage/clients */
+    .c-gray rect { fill: #F1EFE8; stroke: #5F5E5A; }
+    .c-gray text { fill: #444441; }
+    .c-gray .ts { fill: #5F5E5A; }
+  </style>
+</defs>
+
+<!-- Legend -->
+<g class="c-blue"><rect x="40" y="20" width="12" height="12" rx="2" stroke-width="0.5"/></g>
+<text class="ts" x="58" y="26" dominant-baseline="central">Network / security</text>
+<g class="c-teal"><rect x="200" y="20" width="12" height="12" rx="2" stroke-width="0.5"/></g>
+<text class="ts" x="218" y="26" dominant-baseline="central">Compute / virtualization</text>
+<g class="c-purple"><rect x="390" y="20" width="12" height="12" rx="2" stroke-width="0.5"/></g>
+<text class="ts" x="408" y="26" dominant-baseline="central">Services</text>
+<g class="c-gray"><rect x="480" y="20" width="12" height="12" rx="2" stroke-width="0.5"/></g>
+<text class="ts" x="498" y="26" dominant-baseline="central">Storage / clients</text>
+
+<!-- Internet -->
+<g class="c-gray">
+  <rect x="240" y="46" width="200" height="40" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="66" text-anchor="middle" dominant-baseline="central">Internet</text>
+</g>
+
+<line x1="340" y1="86" x2="340" y2="120" class="arr" marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+
+<!-- VPS -->
+<g class="c-blue">
+  <rect x="180" y="120" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="142" text-anchor="middle" dominant-baseline="central">VPS — OpenBSD</text>
+  <text class="ts" x="340" y="160" text-anchor="middle" dominant-baseline="central">WireGuard endpoint · port 51820 · pf firewall</text>
+</g>
+
+<line x1="340" y1="176" x2="340" y2="210" class="arr" marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+<text class="ts" x="356" y="196" dominant-baseline="central">WireGuard tunnel</text>
+
+<!-- Router -->
+<g class="c-blue">
+  <rect x="180" y="210" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="232" text-anchor="middle" dominant-baseline="central">OpenBSD Router — 10.0.0.1</text>
+  <text class="ts" x="340" y="250" text-anchor="middle" dominant-baseline="central">pf firewall · NAT · Unbound DNS · WireGuard client</text>
+</g>
+
+<text class="ts" x="340" y="284" text-anchor="middle" dominant-baseline="central">LAN 10.0.0.0/24</text>
+<line x1="100" y1="292" x2="580" y2="292" stroke="#aaa" stroke-width="0.5" stroke-dasharray="3 3"/>
+
+<line x1="200" y1="292" x2="200" y2="322" class="arr" marker-end="url(#arrow)"/>
+<line x1="480" y1="292" x2="480" y2="322" class="arr" marker-end="url(#arrow)"/>
+<line x1="120" y1="292" x2="120" y2="570" class="arr" marker-end="url(#arrow)"/>
+<line x1="560" y1="292" x2="560" y2="570" class="arr" marker-end="url(#arrow)"/>
+
+<!-- Homelab -->
+<g class="c-purple">
+  <rect x="40" y="322" width="320" height="360" rx="12" stroke-width="0.5"/>
+  <text class="th" x="200" y="347" text-anchor="middle" dominant-baseline="central">Homelab — NixOS · 10.0.0.50</text>
+  <text class="ts" x="200" y="365" text-anchor="middle" dominant-baseline="central">k3s single-node cluster</text>
+</g>
+
+<g class="c-blue">
+  <rect x="60" y="378" width="280" height="36" rx="6" stroke-width="0.5"/>
+  <text class="th" x="200" y="392" text-anchor="middle" dominant-baseline="central">nginx ingress · MetalLB · 10.0.0.210</text>
+  <text class="ts" x="200" y="406" text-anchor="middle" dominant-baseline="central">TLS termination · cert-manager · Sealed Secrets</text>
+</g>
+
+<g class="c-purple">
+  <rect x="60" y="428" width="130" height="44" rx="6" stroke-width="0.5"/>
+  <text class="th" x="125" y="446" text-anchor="middle" dominant-baseline="central">Media stack</text>
+  <text class="ts" x="125" y="462" text-anchor="middle" dominant-baseline="central">11 services</text>
+</g>
+
+<g class="c-purple">
+  <rect x="210" y="428" width="130" height="44" rx="6" stroke-width="0.5"/>
+  <text class="th" x="275" y="446" text-anchor="middle" dominant-baseline="central">Productivity</text>
+  <text class="ts" x="275" y="462" text-anchor="middle" dominant-baseline="central">5 services</text>
+</g>
+
+<g class="c-purple">
+  <rect x="60" y="486" width="280" height="44" rx="6" stroke-width="0.5"/>
+  <text class="th" x="200" y="504" text-anchor="middle" dominant-baseline="central">Infrastructure</text>
+  <text class="ts" x="200" y="520" text-anchor="middle" dominant-baseline="central">Monitoring · Backups · Notifications · Ingress</text>
+</g>
+
+<g class="c-gray">
+  <rect x="60" y="544" width="280" height="36" rx="6" stroke-width="0.5"/>
+  <text class="th" x="200" y="558" text-anchor="middle" dominant-baseline="central">Storage</text>
+  <text class="ts" x="200" y="572" text-anchor="middle" dominant-baseline="central">SSD /var/lib/k8s · HDD /data · HDD /media</text>
+</g>
+
+<!-- Proxmox -->
+<g class="c-teal">
+  <rect x="380" y="322" width="260" height="230" rx="12" stroke-width="0.5"/>
+  <text class="th" x="510" y="347" text-anchor="middle" dominant-baseline="central">Proxmox — 10.0.0.60</text>
+  <text class="ts" x="510" y="365" text-anchor="middle" dominant-baseline="central">GPU passthrough · VFIO</text>
+</g>
+
+<g class="c-teal">
+  <rect x="400" y="378" width="220" height="56" rx="6" stroke-width="0.5"/>
+  <text class="th" x="510" y="398" text-anchor="middle" dominant-baseline="central">NixOS HTB VM</text>
+  <text class="ts" x="510" y="416" text-anchor="middle" dominant-baseline="central">GTX 1070 passthrough · Hashcat</text>
+</g>
+
+<g class="c-teal">
+  <rect x="400" y="448" width="220" height="44" rx="6" stroke-width="0.5"/>
+  <text class="th" x="510" y="466" text-anchor="middle" dominant-baseline="central">Windows VM</text>
+  <text class="ts" x="510" y="482" text-anchor="middle" dominant-baseline="central">Sunshine/Moonlight</text>
+</g>
+
+<text class="ts" x="510" y="518" text-anchor="middle" dominant-baseline="central">GPU shared between VMs</text>
+<text class="ts" x="510" y="534" text-anchor="middle" dominant-baseline="central">(one active at a time)</text>
+
+<!-- Desktop -->
+<g class="c-gray">
+  <rect x="60" y="726" width="120" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="120" y="744" text-anchor="middle" dominant-baseline="central">Nix desktop</text>
+  <text class="ts" x="120" y="760" text-anchor="middle" dominant-baseline="central">10.0.0.102</text>
+</g>
+
+<!-- Laptop -->
+<g class="c-gray">
+  <rect x="500" y="726" width="120" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="560" y="744" text-anchor="middle" dominant-baseline="central">LL-Nix</text>
+  <text class="ts" x="560" y="760" text-anchor="middle" dominant-baseline="central">NixOS laptop</text>
+</g>
+
+<line x1="120" y1="570" x2="120" y2="726" stroke="#aaa" stroke-width="0.5"/>
+<line x1="560" y1="570" x2="560" y2="726" stroke="#aaa" stroke-width="0.5"/>
+
+<text class="ts" x="340" y="716" text-anchor="middle" dominant-baseline="central">WireGuard clients (phones, laptop when remote)</text>
+</svg>

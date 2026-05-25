@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: slskd
+  namespace: homelab
+spec:
+  selector:
+    app: slskd
+  ports:
+  - name: web
+    port: 5030
+    targetPort: 5030
+  - name: soulseek
+    port: 2234
+    targetPort: 2234

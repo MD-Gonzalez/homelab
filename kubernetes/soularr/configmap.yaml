@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: soularr-config
+  namespace: homelab
+  annotations:
+    note: "This configmap is no longer used. Config is managed via soularr/config-sealed.yaml (Sealed Secret)"
+data: {}

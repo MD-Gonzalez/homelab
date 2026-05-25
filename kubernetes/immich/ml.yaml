@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: immich-ml
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: immich-ml
+  template:
+    metadata:
+      labels:
+        app: immich-ml
+    spec:
+      containers:
+      - name: immich-ml
+        image: ghcr.io/immich-app/immich-machine-learning:release
+        env:
+        - name: TZ
+          value: "America/Argentina/Buenos_Aires"
+        volumeMounts:
+        - name: model-cache
+          mountPath: /cache
+      volumes:
+      - name: model-cache
+        hostPath:
+          path: /var/lib/k8s/immich-ml-cache
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: immich-ml
+  namespace: homelab
+spec:
+  selector:
+    app: immich-ml
+  ports:
+  - port: 3003
+    targetPort: 3003

@@ -1,0 +1,15 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: deemix-arl
+  namespace: homelab
+spec:
+  encryptedData:
+    arl: AgAZXazAF/adi22XORAk0Bp7Y00FRWgYnRS+ozX5vkuMLxVX9j/jvqMXJrsFKONi1HnfeMSkK9L5FXn6u7qDXGqrluzikcwWwVvQUTrmI/xBTxFc7c6D6cOHn2sUfeM/CUXro5cxuO/ii4jBSbGD0wAj3g56MVuuzpmR8eoxpc8fwuiJpqNx9ERDpAIXANSwCjXBW/kx7nOze6fBp8MUnTpUH8I9zEGA4kM39Oyg4Y+PvgzOU8196MEKze+paAgjv6iqelKFvYe4X0uYcCkhvNMlStJCN3Syxepn0eFwCEh6iWHoGf9bfiDDRwZ6NnN73oGAaLr/rZ6DbVAb7VPX1BQc5b1xpKs4+e8PRyFVgXvcPf+kwmx9b/Mpgy0rNHAUia3AYTelgfwR0wzqPA/tcZXSOOYIuiIZG9IlS+h6j0SI1su17YGD5YlhZyRmcN+lh1X9wgqrAIKU+xfXElKiQp3h86CpkhnB/NNQjtkABnCAqU6uSeGE44PxbDdSGrnZuoQfi6O2XlcXNqy5sUAEziK5/2jCKRttGDmyc/cIqcwxvdepF8FmGdh2Baal0jTbTO7gZbvR7b0Xwz1Twf3U4TZnlCltVYdcLGoq8Mrohl//LxGjsilz/clj3fVv4NDb3hWTVvAGT4TXRGn05nqwVo0A5os8aBgitSdCU/rXmiaeGOkLr7C6Zj//cPVCWtMHxrTLsGJZTmr7oxZA4RXokasXePJ29aXZi0TQmQOqf2vKZ8hR75KK+Lk6Edtoa6eFfKE6HFSGT6vWY4DRNqGJ6GD9hqzC3wYwNFPBcncIUKewDrxrhOvcmWxZ5BsDVlP6CXKpC4XwSPIfUUMbEfbqAM9tLxb363ZPuIzHX1f1qVSQPbZQLzjYnNgL5J1nCy807rRNa7wu6C9GPZraAMVASKZw267trFXDxSAoJdkkamTnAhrBsm+so0lMN7w4zkf6Ebk=
+  template:
+    metadata:
+      creationTimestamp: null
+      name: deemix-arl
+      namespace: homelab

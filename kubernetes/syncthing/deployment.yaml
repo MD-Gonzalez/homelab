@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: syncthing
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: syncthing
+  template:
+    metadata:
+      labels:
+        app: syncthing
+    spec:
+      containers:
+      - name: syncthing
+        image: lscr.io/linuxserver/syncthing:latest
+        ports:
+        - containerPort: 8384
+        - containerPort: 22000
+          protocol: TCP
+        - containerPort: 22000
+          protocol: UDP
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "100"
+        - name: TZ
+          value: "America/Argentina/Buenos_Aires"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: config
+        hostPath:
+          path: /var/lib/k8s/syncthing
+      - name: data
+        hostPath:
+          path: /data/syncthing

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: soularr
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: soularr
+  template:
+    metadata:
+      labels:
+        app: soularr
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+      - name: soularr
+        image: mrusse08/soularr:latest
+        env:
+        - name: SCRIPT_INTERVAL
+          value: "300"
+        volumeMounts:
+        - name: config
+          mountPath: /data/config.ini
+          subPath: config.ini
+        - name: data
+          mountPath: /data  
+        - name: downloads
+          mountPath: /downloads
+      volumes:
+      - name: config
+        secret:
+          secretName: soularr-config-secret
+      - name: data
+        hostPath:
+          path: /var/lib/k8s/soularr
+      - name: downloads
+        hostPath:
+          path: /media/downloads

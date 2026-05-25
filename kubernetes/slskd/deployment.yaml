@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slskd
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: slskd
+  template:
+    metadata:
+      labels:
+        app: slskd
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+      - name: slskd
+        image: slskd/slskd:latest
+        ports:
+        - containerPort: 5030
+        - containerPort: 2234
+        env:
+        - name: SLSKD_CONFIG
+          value: /config/slskd.yml
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: config-file
+          mountPath: /config/slskd.yml
+          subPath: slskd.yml
+        - name: music
+          mountPath: /music
+          readOnly: true
+        - name: downloads
+          mountPath: /app/downloads
+        - name: incomplete
+          mountPath: /app/incomplete
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: slskd-config
+      - name: config-file
+        secret:
+          secretName: slskd-config-secret
+      - name: music
+        hostPath:
+          path: /media/music
+      - name: downloads
+        hostPath:
+          path: /media/downloads/complete
+      - name: incomplete
+        hostPath:
+          path: /media/downloads/incomplete

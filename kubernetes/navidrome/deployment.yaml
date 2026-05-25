@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: navidrome
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: navidrome
+  template:
+    metadata:
+      labels:
+        app: navidrome
+    spec:
+      containers:
+      - name: navidrome
+        image: deluan/navidrome:latest
+        ports:
+        - containerPort: 4533
+        env:
+        - name: ND_PLUGINS_ENABLED
+          value: "true"
+        - name: ND_PLUGINS_AUTORELOAD
+          value: "true"
+        - name: ND_ENABLEEXTERNALSERVICES
+          value: "true"
+        - name: ND_MUSICFOLDER
+          value: /music
+        - name: ND_DATAFOLDER
+          value: /data
+        - name: ND_LOGLEVEL
+          value: info
+        - name: ND_ENABLELYRICS
+          value: "true"
+        - name: ND_LRCLIB_URL
+          value: "https://lrclib.net"
+        volumeMounts:
+        - name: config
+          mountPath: /data
+        - name: music
+          mountPath: /music
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: navidrome-config-pvc
+      - name: music
+        hostPath:
+          path: /media/music 

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyseerr
+  namespace: homelab
+spec:
+  selector:
+    app: jellyseerr
+  ports:
+  - port: 5055
+    targetPort: 5055

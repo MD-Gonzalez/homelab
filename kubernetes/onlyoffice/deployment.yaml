@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: onlyoffice
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: onlyoffice
+  template:
+    metadata:
+      labels:
+        app: onlyoffice
+    spec:
+      containers:
+      - name: onlyoffice
+        image: onlyoffice/documentserver:8.2
+        ports:
+        - containerPort: 80
+        env:
+        - name: JWT_ENABLED
+          value: "true"
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: onlyoffice-credentials
+              key: jwt-secret
+        - name: TZ
+          value: "America/Argentina/Buenos_Aires"
+        volumeMounts:
+        - name: data
+          mountPath: /var/www/onlyoffice/Data
+        - name: logs
+          mountPath: /var/log/onlyoffice
+      volumes:
+      - name: data
+        hostPath:
+          path: /var/lib/k8s/onlyoffice
+      - name: logs
+        hostPath:
+          path: /var/lib/k8s/onlyoffice-logs

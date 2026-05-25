@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: musicseerr
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: musicseerr
+  template:
+    metadata:
+      labels:
+        app: musicseerr
+    spec:
+      containers:
+      - name: musicseerr
+        image: ghcr.io/habirabbu/musicseerr:latest
+        ports:
+        - containerPort: 8688
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "100"
+        - name: PORT
+          value: "8688"
+        - name: TZ
+          value: "America/Argentina/Buenos_Aires"
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+        - name: music
+          mountPath: /music
+          readOnly: true
+      volumes:
+      - name: data
+        hostPath:
+          path: /var/lib/k8s/musicseerr
+      - name: music
+        hostPath:
+          path: /media/music

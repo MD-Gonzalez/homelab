@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lidarr
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lidarr
+  template:
+    metadata:
+      labels:
+        app: lidarr
+    spec:
+      containers:
+      - name: lidarr
+        image: youegraillot/lidarr-on-steroids:latest
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "America/Argentina/Buenos_Aires"
+        ports:
+        - containerPort: 8686
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: music
+          mountPath: /music
+        - name: downloads
+          mountPath: /downloads
+        - name: deemix-config
+          mountPath: /config_deemix
+      volumes:
+      - name: deemix-config
+        hostPath:
+          path: /var/lib/k8s/deemix
+      - name: config
+        persistentVolumeClaim:
+          claimName: lidarr-config-pvc
+      - name: music
+        hostPath:
+          path: /media/music 
+      - name: downloads
+        hostPath:
+          path: /media/downloads 

@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kopia
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kopia
+  template:
+    metadata:
+      labels:
+        app: kopia
+    spec:
+      containers:
+      - name: kopia
+        image: kopia/kopia:latest
+        args:
+        - server
+        - start
+        - --insecure
+        - --address=0.0.0.0:51515
+        - --server-username=Nuuvv
+        - --server-password=$(KOPIA_SERVER_PASSWORD)
+        - --tls-cert-file=/tls/tls.crt
+        - --tls-key-file=/tls/tls.key
+        ports:
+        - containerPort: 51515
+        env:
+        - name: TZ
+          value: "America/Argentina/Buenos_Aires"
+        - name: KOPIA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kopia-credentials
+              key: repo-password
+        - name: KOPIA_SERVER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kopia-credentials
+              key: server-password
+        volumeMounts:
+        - name: tls
+          mountPath: /tls
+          readOnly: true
+        - name: config
+          mountPath: /app/config
+        - name: cache
+          mountPath: /app/cache
+        - name: backups
+          mountPath: /backups
+      volumes:
+      - name: tls
+        secret:
+          secretName: backup-sigilos-st-tls
+      - name: config
+        hostPath:
+          path: /var/lib/k8s/kopia
+      - name: cache
+        hostPath:
+          path: /var/lib/k8s/kopia-cache
+      - name: backups
+        hostPath:
+          path: /data/backups

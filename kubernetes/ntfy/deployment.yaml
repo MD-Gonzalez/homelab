@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ntfy
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ntfy
+  template:
+    metadata:
+      labels:
+        app: ntfy
+    spec:
+      containers:
+      - name: ntfy
+        image: binwiederhier/ntfy:latest
+        args:
+        - serve
+        ports:
+        - containerPort: 80
+        env:
+        - name: TZ
+          value: "America/Argentina/Buenos_Aires"
+        volumeMounts:
+        - name: config
+          mountPath: /etc/ntfy
+        - name: data
+          mountPath: /var/lib/ntfy
+      volumes:
+      - name: config
+        hostPath:
+          path: /var/lib/k8s/ntfy
+      - name: data
+        hostPath:
+          path: /var/lib/k8s/ntfy-data

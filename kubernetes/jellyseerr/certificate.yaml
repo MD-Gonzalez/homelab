@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: requests-sigilos-st-tls
+  namespace: homelab
+spec:
+  secretName: requests-sigilos-st-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - requests.sigilos.st
