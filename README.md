@@ -4,23 +4,7 @@ A production-style self-hosted infrastructure platform built on Kubernetes, NixO
 
 ## Architecture Overview
 
-```
-Internet
-    │
-    ▼
-[AWS EC2 - Debian]  ← Primary WireGuard endpoint (port 51820)
-    │ WireGuard tunnel
-    │
-[Vultr VPS - OpenBSD]  ← Standby WireGuard endpoint (auto-failover)
-    │ WireGuard tunnel
-    ▼
-[OpenBSD Router - pf firewall]  10.0.0.1
-    │ LAN 10.0.0.0/24
-    ├──► [Homelab - NixOS + k3s]  10.0.0.50  ← 50+ Kubernetes services
-    ├──► [Nix Desktop]  10.0.0.102
-    ├──► [LL-Nix - NixOS Laptop]  10.0.0.162
-    └──► [Proxmox Server]  10.0.0.60  ← VMs (NixOS HTB, Windows)
-```
+![architecture diagram](docs/architecture.svg)
 
 **Security model:** Nothing is exposed to the internet except WireGuard port 51820 on the VPS endpoints. All services are accessed via WireGuard VPN or LAN only. Automatic failover between AWS EC2 (primary) and Vultr VPS (standby) via a router-side cron script.
 
@@ -49,7 +33,7 @@ Internet
 |---------|-------------|
 | Jellyfin | Media server |
 | Radarr | Movie management |
-| Sonarr | TV/Anime management |
+| Sonarr | TV management |
 | Lidarr | Music management (Deemix integration) |
 | Prowlarr | Indexer management |
 | Bazarr | Subtitle management |
@@ -84,9 +68,20 @@ Internet
 | MetalLB | Load balancer |
 | nginx ingress | Reverse proxy / TLS termination |
 
+### Screenshots
+
+![Jellyfin](docs/screenshots/20260520_01h49m50s_grim.png)
+*Jellyfin media server*
+
+![Nextcloud](docs/screenshots/20260520_01h50m38s_grim.png)
+*Nextcloud file manager*
+
+![Immich](docs/screenshots/20260520_01h53m11s_grim.png)
+*Immich photo libreary with ML-powered facial recognition*
+
 ## NixOS Configuration
 
-All machines are managed declaratively via NixOS flakes. The configuration is fully reproducible — any machine can be rebuilt from scratch using only the flake.
+All machines are managed declaratively via NixOS flakes. The configuration is fully reproducible - any machine can be rebuilt from scratch using only the flake.
 
 ```
 nixos/
@@ -118,7 +113,7 @@ ArgoCD monitors this repository and detects any drift between the git state and 
 
 ## Secret Management
 
-All secrets are managed via [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets). Rather than storing plaintext credentials in the repository, secrets are encrypted using the cluster's public key before being committed. The encrypted values are completely safe to store in a public repository — they can only be decrypted by the Sealed Secrets controller running inside the specific cluster that generated the key pair. This allows the entire infrastructure to be version-controlled and publicly shared without exposing any sensitive data.
+All secrets are managed via [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets). Rather than storing plaintext credentials in the repository, secrets are encrypted using the cluster's public key before being committed. The encrypted values are completely safe to store in a public repository. They can only be decrypted by the Sealed Secrets controller running inside the specific cluster that generated the key pair. This allows the entire infrastructure to be version-controlled and publicly shared without exposing any sensitive data.
 
 ## Network Architecture
 
@@ -148,12 +143,14 @@ Prometheus + Grafana with a custom home dashboard tracking:
 
 Alerts fire to ntfy (self-hosted push notification server) which delivers notifications to Android phones when disk usage exceeds 85%, pods fail, CPU temperature spikes, or RAM usage is high.
 
+![Grafana dashboard](docs/screenshots/20260520_01h48m06s_grim.png)
+
 ## Machines
 
 | Host | OS | Role |
 |------|----|------|
 | Homelab | NixOS | k3s single-node cluster |
-| Nix Desktop | NixOS | Desktop workstation |
+| Nix | NixOS | Desktop workstation |
 | LL-Nix | NixOS | Laptop (AMD+NVIDIA Prime offload) |
 | Proxmox | Proxmox VE | Virtualization server |
 | nixos-htb | NixOS (VM) | Cybersecurity / HTB labs (NVIDIA GPU passthrough) |
@@ -166,7 +163,7 @@ To deploy this infrastructure you will need:
 - Two VPS instances for redundant WireGuard endpoints (AWS EC2 + any OpenBSD VPS)
 - A domain name with Cloudflare DNS (required for cert-manager DNS-01 challenge)
 - A Cloudflare API token with DNS edit permissions
-- A Sealed Secrets controller deployed in your cluster (required to decrypt the sealed secrets in this repo — note: the sealed secrets here are encrypted for this specific cluster and cannot be decrypted elsewhere; you will need to re-seal your own secrets)
+- A Sealed Secrets controller deployed in your cluster (required to decrypt the sealed secrets in this repo.
 - MetalLB configured with an IP range on your LAN
 - Basic familiarity with Kubernetes, NixOS, and networking
 
@@ -229,16 +226,6 @@ argocd app create homelab \
   --directory-recurse
 ```
 
-## Known Issues & Limitations
-
-- **Single node**: The k3s cluster runs on a single node — there is no high availability. If the homelab goes down, all services go down.
-- **CGNAT**: The homelab ISP uses CGNAT so the homelab has no public IP. All external access is routed through the VPS via WireGuard.
-- **OnlyOffice version pinning**: OnlyOffice is pinned to version 8.2 due to a compatibility issue with the Nextcloud ONLYOFFICE app and newer OnlyOffice versions.
-- **Sealed Secrets are cluster-specific**: The encrypted secrets in this repo cannot be decrypted outside of the original cluster. Anyone deploying this will need to generate and seal their own secrets.
-- **GPU passthrough**: The NVIDIA GTX 1070 is passed through to either the Windows VM or the NixOS HTB VM — not both simultaneously. Switching requires stopping one VM before starting the other.
-- **Music stack**: Some albums are not available on Soulseek or Deezer and require manual sourcing.
-- **WireGuard failover**: Automatic failover between AWS and Vultr is handled at the router level only. Mobile clients require manual endpoint switching.
-
 ## Infrastructure as Code (Terraform)
 
 All cloud infrastructure and DNS is managed declaratively using Terraform, organized under `terraform/`:
@@ -251,11 +238,14 @@ terraform/
 
 **Cloudflare DNS** — all public DNS records for `sigilos.st` declared as code including the VPN endpoint, CloudFront distribution, and ACM certificate validation records.
 
-**AWS** — all AWS resources declared and version-controlled:
-- S3 buckets (site hosting + Velero offsite backups)
-- IAM users with scoped least-privilege policies (CI/CD, backup)
-- IAM group with AdministratorAccess
-- EC2 instance role for the Debian VPN server
-- All IAM policies as JSON
+**AWS** — all AWS resources declared and version-controlled: S3 buckets, IAM users with scoped least-privilege policies, IAM group, EC2 instance role, and all IAM policies. Any infrastructure change goes through `terraform plan` review before `terraform apply`.
 
-Any change to cloud infrastructure goes through a `terraform plan` review before `terraform apply` — the same GitOps discipline applied to Kubernetes manifests.
+## Known Issues & Limitations
+
+- **Single node**: The k3s cluster runs on a single node — there is no high availability. If the homelab goes down, all services go down.
+- **CGNAT**: The homelab ISP uses CGNAT so the homelab has no public IP. All external access is routed through the VPS via WireGuard.
+- **OnlyOffice version pinning**: OnlyOffice is pinned to version 8.2 due to a compatibility issue with the Nextcloud ONLYOFFICE app and newer OnlyOffice versions.
+- **Sealed Secrets are cluster-specific**: The encrypted secrets in this repo cannot be decrypted outside of the original cluster. Anyone deploying this will need to generate and seal their own secrets.
+- **GPU passthrough**: The NVIDIA GTX 1070 is passed through to either the Windows VM or the NixOS HTB VM — not both simultaneously. Switching requires stopping one VM before starting the other.
+- **Music stack**: Some albums are not available on Soulseek or Deezer and require manual sourcing and/or managing.
+- **WireGuard failover**: Automatic failover between AWS and Vultr is handled at the router level only. Mobile clients require manual endpoint switching.
