@@ -8,16 +8,6 @@ resource "cloudflare_record" "vpn" {
   proxied = false
 }
 
-# Music - points to Vultr (standby VPN)
-resource "cloudflare_record" "music" {
-  zone_id = var.zone_id
-  name    = "music"
-  content = "45.77.198.8"
-  type    = "A"
-  ttl     = 1
-  proxied = false
-}
-
 # Sigilos site - CloudFront
 resource "cloudflare_record" "root" {
   zone_id = var.zone_id
