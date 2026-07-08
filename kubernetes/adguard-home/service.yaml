@@ -24,10 +24,12 @@ kind: Service
 metadata:
   name: adguard-home-web
   namespace: homelab
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.0.0.221
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: adguard-home
   ports:
   - port: 3000
-    targetPort: 3000
+    targetPort: 80
