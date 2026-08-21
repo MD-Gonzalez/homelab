@@ -8,6 +8,10 @@ spec:
     - name: build
       image: ubuntu:18.04
       command: ["sleep", "infinity"]
+      securityContext:
+        capabilities:
+          add:
+            - SYS_PTRACE
       resources:
         requests:
           cpu: "4"
