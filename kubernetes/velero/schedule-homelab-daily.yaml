@@ -1,0 +1,16 @@
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: homelab-daily
+  namespace: velero
+spec:
+  schedule: "0 2 * * *"
+  skipImmediately: false
+  useOwnerReferencesInBackup: false
+  template:
+    includedNamespaces: ["homelab"]
+    ttl: 720h0m0s
+    csiSnapshotTimeout: 0s
+    itemOperationTimeout: 0s
+    hooks: {}
+    metadata: {}

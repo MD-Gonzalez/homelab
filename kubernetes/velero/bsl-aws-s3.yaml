@@ -1,0 +1,15 @@
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: aws-s3
+  namespace: velero
+spec:
+  accessMode: ReadWrite
+  provider: aws
+  objectStorage:
+    bucket: sigilos-homelab-backups
+  config:
+    region: us-east-2
+  credential:
+    name: velero-s3-credentials
+    key: cloud
