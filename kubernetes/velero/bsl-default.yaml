@@ -9,6 +9,9 @@ spec:
   objectStorage:
     bucket: velero
   config:
-    region: minio
+    region: garage
     s3ForcePathStyle: "true"
-    s3Url: http://minio.homelab.svc.cluster.local:9000
+    s3Url: http://garage.homelab.svc.cluster.local:3900
+  credential:
+    name: garage-credentials
+    key: cloud

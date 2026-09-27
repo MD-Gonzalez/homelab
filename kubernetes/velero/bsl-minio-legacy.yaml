@@ -1,0 +1,16 @@
+# Read-only until the last minio-era backups expire (30d TTL, ~2026-10-27),
+# then delete this file and kubernetes/minio/.
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: minio-legacy
+  namespace: velero
+spec:
+  accessMode: ReadOnly
+  provider: aws
+  objectStorage:
+    bucket: velero
+  config:
+    region: minio
+    s3ForcePathStyle: "true"
+    s3Url: http://minio.homelab.svc.cluster.local:9000
