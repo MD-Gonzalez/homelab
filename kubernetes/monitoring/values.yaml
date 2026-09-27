@@ -46,7 +46,7 @@ grafana:
     requests:
       memory: 128Mi
     limits:
-      memory: 512Mi
+      memory: 1Gi
 
 prometheus:
   prometheusSpec:
@@ -102,3 +102,15 @@ additionalPrometheusRulesMap:
               severity: warning
             annotations:
               description: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} is at {{ $value | humanizePercentage }} of its memory limit for 10m.'
+
+# k3s runs scheduler, controller-manager and kube-proxy inside the server
+# binary and doesn't expose them the way the chart expects; without this
+# the chart's *Down alerts fire permanently. Single node uses SQLite, no etcd.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeEtcd:
+  enabled: false
