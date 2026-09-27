@@ -28,11 +28,25 @@ spec:
               key: jwt-secret
         - name: TZ
           value: "America/Argentina/Buenos_Aires"
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 250m
+          limits:
+            memory: 4Gi
         volumeMounts:
         - name: data
           mountPath: /var/www/onlyoffice/Data
         - name: logs
           mountPath: /var/log/onlyoffice
+        # Override the bundled plugin list with an empty one so the entrypoint's
+        # pluginsmanager --update has nothing to fetch. Upstream bug: a dead
+        # plugin download URL sends pluginsmanager into an infinite loop that
+        # consumed all node memory (ONLYOFFICE/DocumentServer#3811, 2026-09-26).
+        - name: plugin-list
+          mountPath: /var/www/onlyoffice/documentserver/sdkjs-plugins/plugin-list-default.json
+          subPath: plugin-list-default.json
+          readOnly: true
       volumes:
       - name: data
         hostPath:
@@ -40,3 +54,6 @@ spec:
       - name: logs
         hostPath:
           path: /var/lib/k8s/onlyoffice-logs
+      - name: plugin-list
+        configMap:
+          name: onlyoffice-plugin-list
