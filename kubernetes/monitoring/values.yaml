@@ -1,26 +1,104 @@
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 2Gi
+          storageClassName: local-path
+    resources:
+      requests:
+        memory: 64Mi
+      limits:
+        memory: 256Mi
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: ntfy
+      group_by: ['alertname', 'namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      routes:
+        - receiver: 'null'
+          matchers:
+            - alertname = "Watchdog"
+    receivers:
+      - name: 'null'
+      - name: ntfy
+        webhook_configs:
+          # ntfy fills the title/message templates from Alertmanager's JSON body.
+          - url: 'http://ntfy.homelab.svc.cluster.local:80/alerts?tpl=1&t={{ .Status }}:%20{{ .CommonLabels.alertname }}&priority={{ if eq .Status "firing" }}high{{ else }}default{{ end }}&m={{ "{{range%20.alerts}}{{.annotations.description}}%0A{{end}}" }}'
+            send_resolved: true
+
 grafana:
-  adminPassword: "OOqgwQJOP3EoCZIOKCCgbsDJEMF9VPWJU5WhUwZc"
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
   persistence:
     enabled: true
-    storageClassName: local-path
     size: 5Gi
+    storageClassName: local-path
+  resources:
+    requests:
+      memory: 128Mi
+    limits:
+      memory: 512Mi
 
 prometheus:
   prometheusSpec:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: local-path
           resources:
             requests:
               storage: 10Gi
-
-alertmanager:
-  alertmanagerSpec:
-    storage:
-      volumeClaimTemplate:
-        spec:
           storageClassName: local-path
-          resources:
-            requests:
-              storage: 2Gi
+    retention: 15d
+    resources:
+      requests:
+        memory: 512Mi
+      limits:
+        memory: 2Gi
+
+# Rules that would have caught 2026-09-26. The chart's defaults fire at 90%
+# memory for 15m, which a fast leak blows through; these are tighter and
+# also catch the no-swap thrash livelock via load and PSI.
+additionalPrometheusRulesMap:
+  homelab-node:
+    groups:
+      - name: homelab-node
+        rules:
+          - alert: NodeMemoryAvailableLow
+            expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.10
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              description: 'Node {{ $labels.instance }} has {{ $value | humanizePercentage }} memory available for 5m. Check: ps -eo pid,rss,comm --sort=-rss | head'
+          - alert: NodeMemoryPressure
+            expr: rate(node_pressure_memory_waiting_seconds_total[5m]) > 0.25
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              description: 'Node {{ $labels.instance }} is thrashing: tasks stalled on memory {{ $value | humanizePercentage }} of the time. Pre-livelock signal.'
+          - alert: NodeLoadHigh
+            expr: node_load5 > 4 * count(node_cpu_seconds_total{mode="idle"}) without (cpu, mode)
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              description: 'Node {{ $labels.instance }} load5 is {{ $value }}, more than 4x core count for 10m.'
+          - alert: PodNearMemoryLimit
+            expr: |
+              sum by (namespace, pod) (container_memory_working_set_bytes{container!="", container!="POD"})
+                / sum by (namespace, pod) (kube_pod_container_resource_limits{resource="memory"}) > 0.9
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              description: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} is at {{ $value | humanizePercentage }} of its memory limit for 10m.'
