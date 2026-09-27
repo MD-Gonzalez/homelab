@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: garage
+  namespace: homelab
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: garage
+  template:
+    metadata:
+      labels:
+        app: garage
+    spec:
+      containers:
+      - name: garage
+        image: dxflrs/garage:v2.4.1
+        ports:
+        - containerPort: 3900
+          name: s3
+        - containerPort: 3903
+          name: admin
+        envFrom:
+        - secretRef:
+            name: garage-secrets
+        resources:
+          requests:
+            memory: 128Mi
+          limits:
+            memory: 1Gi
+        volumeMounts:
+        - name: config
+          mountPath: /etc/garage.toml
+          subPath: garage.toml
+          readOnly: true
+        - name: meta
+          mountPath: /var/lib/garage/meta
+        - name: data
+          mountPath: /var/lib/garage/data
+      volumes:
+      - name: config
+        configMap:
+          name: garage-config
+      - name: meta
+        hostPath:
+          path: /var/lib/k8s/garage/meta
+          type: DirectoryOrCreate
+      - name: data
+        hostPath:
+          path: /var/lib/k8s/garage/data
+          type: DirectoryOrCreate
