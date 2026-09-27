@@ -1,0 +1,18 @@
+# Default memory limit for any container in `homelab` that doesn't set one.
+# Added after the 2026-09-26 incident where an unbounded OnlyOffice pod
+# consumed all node memory and took the LAN's DNS down with it.
+# defaultRequest is deliberately small: a default limit alone would make
+# Kubernetes set request=limit and overcommit the node on paper.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: homelab
+spec:
+  limits:
+  - type: Container
+    default:
+      memory: 2Gi
+    defaultRequest:
+      memory: 256Mi
+      cpu: 50m

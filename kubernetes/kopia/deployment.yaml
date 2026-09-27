@@ -16,6 +16,11 @@ spec:
       containers:
       - name: kopia
         image: kopia/kopia:latest
+        resources:
+          requests:
+            memory: 256Mi
+          limits:
+            memory: 3Gi
         args:
         - server
         - start

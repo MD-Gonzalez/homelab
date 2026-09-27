@@ -16,6 +16,11 @@ spec:
       containers:
       - name: nextcloud
         image: nextcloud:28-apache
+        resources:
+          requests:
+            memory: 512Mi
+          limits:
+            memory: 3Gi
         ports:
         - containerPort: 80
         env:

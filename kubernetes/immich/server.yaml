@@ -16,6 +16,11 @@ spec:
       containers:
       - name: immich-server
         image: ghcr.io/immich-app/immich-server:release
+        resources:
+          requests:
+            memory: 512Mi
+          limits:
+            memory: 3Gi
         ports:
         - containerPort: 2283
         env:

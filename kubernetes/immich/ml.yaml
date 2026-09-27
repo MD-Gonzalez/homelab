@@ -16,6 +16,11 @@ spec:
       containers:
       - name: immich-ml
         image: ghcr.io/immich-app/immich-machine-learning:release
+        resources:
+          requests:
+            memory: 512Mi
+          limits:
+            memory: 4Gi
         env:
         - name: TZ
           value: "America/Argentina/Buenos_Aires"
