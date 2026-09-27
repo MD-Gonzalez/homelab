@@ -18,6 +18,7 @@ spec:
       containers:
       - name: jellyseerr
         image: fallenbagel/jellyseerr:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5055
         env:

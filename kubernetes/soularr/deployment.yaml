@@ -22,6 +22,7 @@ spec:
       containers:
       - name: soularr
         image: mrusse08/soularr:latest
+        imagePullPolicy: IfNotPresent
         env:
         - name: SCRIPT_INTERVAL
           value: "300"

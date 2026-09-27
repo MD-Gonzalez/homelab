@@ -18,6 +18,7 @@ spec:
       containers:
       - name: redis
         image: redis:6.2-alpine
+        imagePullPolicy: IfNotPresent
 ---
 apiVersion: v1
 kind: Service

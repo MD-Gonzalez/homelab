@@ -22,6 +22,7 @@ spec:
       containers:
       - name: slskd
         image: slskd/slskd:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5030
         - containerPort: 2234

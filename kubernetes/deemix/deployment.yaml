@@ -18,6 +18,7 @@ spec:
       containers:
       - name: deemix
         image: registry.gitlab.com/bockiii/deemix-docker:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 6595
         env:

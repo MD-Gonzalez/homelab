@@ -18,6 +18,7 @@ spec:
       containers:
       - name: onlyoffice
         image: onlyoffice/documentserver:8.2
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
         env:

@@ -18,6 +18,7 @@ spec:
       containers:
       - name: syncthing
         image: lscr.io/linuxserver/syncthing:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8384
         - containerPort: 22000

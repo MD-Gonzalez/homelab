@@ -18,6 +18,7 @@ spec:
       containers:
       - name: nextcloud
         image: nextcloud:28-apache
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             memory: 512Mi

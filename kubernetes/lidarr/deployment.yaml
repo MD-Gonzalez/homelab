@@ -18,6 +18,7 @@ spec:
       containers:
       - name: lidarr
         image: youegraillot/lidarr-on-steroids:latest
+        imagePullPolicy: IfNotPresent
         env:
         - name: PUID
           value: "1000"

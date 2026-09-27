@@ -18,6 +18,7 @@ spec:
       containers:
       - name: qbittorrent
         image: lscr.io/linuxserver/qbittorrent:latest
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             memory: 256Mi

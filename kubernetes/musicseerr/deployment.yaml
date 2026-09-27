@@ -18,6 +18,7 @@ spec:
       containers:
       - name: musicseerr
         image: ghcr.io/habirabbu/musicseerr:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8688
         env:

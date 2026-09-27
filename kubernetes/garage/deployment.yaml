@@ -18,6 +18,7 @@ spec:
       containers:
       - name: garage
         image: dxflrs/garage:v2.4.1
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3900
           name: s3

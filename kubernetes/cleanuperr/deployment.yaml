@@ -18,6 +18,7 @@ spec:
       containers:
       - name: cleanuperr
         image: ghcr.io/cleanuparr/cleanuparr:latest
+        imagePullPolicy: IfNotPresent
         env:
         - name: TZ
           value: "America/Argentina/Buenos_Aires"
