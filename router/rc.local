@@ -1,0 +1,7 @@
+
+# WireGuard: apply the peer config once DNS works (endpoint is a hostname;
+# netstart runs too early to resolve it, which left the tunnel empty on boot).
+( for i in $(jot 60); do
+    /usr/local/bin/wg setconf wg0 /etc/wireguard/wg0.conf && exit 0
+    sleep 5
+  done; logger -t wg0 "setconf failed after 5 minutes" ) &

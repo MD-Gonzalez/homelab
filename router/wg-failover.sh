@@ -4,6 +4,9 @@ AWS_PEER="10.10.0.6"
 VULTR_PEER="10.10.0.1"
 AWS_PUBKEY="7gEkjxLsR8mI0M9zo5GJX/tkQb1WQrsOK/0XVPBJDg4="
 VULTR_PUBKEY="faXOJ2U5Un1t/Qpx2E7NDeIQWMTKNZyYXn1g1q0kfXI="
+
+# Do nothing if the interface has no peers/endpoints (wg setconf never ran after boot).
+/usr/local/bin/wg show wg0 endpoints | grep -q ':' || { logger -t wg-failover "wg0 has no endpoints, skipping"; exit 0; }
 FAIL_FILE="/tmp/wg_fail_count"
 ACTIVE_FILE="/tmp/wg_active"
 
