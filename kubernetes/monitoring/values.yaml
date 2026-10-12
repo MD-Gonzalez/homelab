@@ -34,6 +34,11 @@ alertmanager:
             send_resolved: true
 
 grafana:
+  grafana.ini:
+    auth:
+      # the Switch kiosk logs in once; keep its session for a year
+      login_maximum_lifetime_duration: 1y
+      login_maximum_inactive_lifetime_duration: 1y
   admin:
     existingSecret: grafana-admin
     userKey: admin-user
