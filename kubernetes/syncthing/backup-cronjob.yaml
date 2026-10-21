@@ -1,0 +1,72 @@
+# Off-site backup of the Syncthing share (Aegis vault backups among it) to AWS S3.
+# Velero can't back up hostPath volumes, so this is a file-level Kopia snapshot,
+# encrypted client-side with the repo password (also in KeePass: without it the
+# snapshots can't be restored). Kopia's retention policy decides what's kept;
+# a failed run fires KubeJobFailed -> Alertmanager -> ntfy.
+# The repository lives under kopia/syncthing-share/ in Velero's bucket: kopia/ is
+# one of the top-level folders Velero accepts (any other would mark its aws-s3
+# location unavailable), Velero only touches repositories it created, and the
+# homelab-backup key already covers the bucket.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: syncthing-backup
+  namespace: homelab
+spec:
+  schedule: "0 4 * * *"
+  timeZone: "America/Argentina/Buenos_Aires"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: kopia
+            image: kopia/kopia:latest
+            imagePullPolicy: IfNotPresent
+            resources:
+              requests:
+                memory: 128Mi
+              limits:
+                memory: 1Gi
+            env:
+            - name: TZ
+              value: "America/Argentina/Buenos_Aires"
+            - name: KOPIA_CONFIG_PATH
+              value: /tmp/kopia/repository.config
+            - name: KOPIA_CHECK_FOR_UPDATES
+              value: "false"
+            - name: KOPIA_PASSWORD
+              valueFrom: {secretKeyRef: {name: syncthing-backup-credentials, key: repo-password}}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom: {secretKeyRef: {name: syncthing-backup-credentials, key: aws-access-key-id}}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom: {secretKeyRef: {name: syncthing-backup-credentials, key: aws-secret-access-key}}
+            command: ["/bin/sh", "-c"]
+            args:
+            - |
+              set -e
+              S3="s3 --bucket=sigilos-homelab-backups --prefix=kopia/syncthing-share/ --region=us-east-2 --access-key=$AWS_ACCESS_KEY_ID --secret-access-key=$AWS_SECRET_ACCESS_KEY"
+              ID="--override-hostname=homelab --override-username=syncthing-backup --cache-directory=/cache"
+              kopia repository connect $S3 $ID || kopia repository create $S3 $ID
+              kopia snapshot create /data/syncthing
+              kopia snapshot list /data/syncthing | tail -3
+            volumeMounts:
+            - name: data
+              mountPath: /data/syncthing
+              readOnly: true
+            - name: cache
+              mountPath: /cache
+          volumes:
+          - name: data
+            hostPath:
+              path: /data/syncthing
+          - name: cache
+            hostPath:
+              path: /var/lib/k8s/syncthing-backup-cache
+              type: DirectoryOrCreate
