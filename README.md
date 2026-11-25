@@ -6,7 +6,7 @@ A production-style self-hosted infrastructure platform built on Kubernetes, NixO
 
 ![architecture diagram](docs/architecture.svg)
 
-**Security model:** Nothing is exposed to the internet except WireGuard port 51820 on the VPS endpoints. All services are accessed via WireGuard VPN or LAN only. Automatic failover between AWS EC2 (primary) and Vultr VPS (standby) via a router-side cron script.
+**Security model:** Nothing is exposed to the internet except WireGuard port 51820 on the AWS VPS endpoint. All services are accessed via WireGuard VPN or LAN only. The router keeps the tunnel to AWS up on its own and re-resolves the endpoint if the EC2 IP changes.
 
 ## Infrastructure Stack
 
@@ -118,8 +118,7 @@ All secrets are managed via [Sealed Secrets](https://github.com/bitnami-labs/sea
 ## Network Architecture
 
 - **AWS EC2 (primary)**: Debian VPS running WireGuard, primary endpoint for all VPN clients
-- **Vultr VPS (standby)**: OpenBSD VPS running WireGuard, automatic failover target if AWS goes down
-- **Failover**: Router-side cron script pings the AWS WireGuard IP every minute — switches routing to Vultr after 3 consecutive failures, fails back when AWS recovers
+- **Tunnel watchdog**: Router-side cron script pings the AWS WireGuard IP every minute; if it stops answering, it re-resolves `vpn.sigilos.st` so an EC2 IP change is picked up automatically (the Vultr standby was retired)
 - **Router (OpenBSD + pf)**: Firewall, NAT, WireGuard client, Unbound DNS resolver
 - **Internal DNS**: All `*.sigilos.st` subdomains resolve to the nginx ingress IP (10.0.0.210) via Unbound on the router
 - **TLS**: cert-manager automatically issues and renews Let's Encrypt certificates via Cloudflare DNS-01 challenge — no ports need to be open for certificate issuance
@@ -160,7 +159,7 @@ Alerts fire to ntfy (self-hosted push notification server) which delivers notifi
 To deploy this infrastructure you will need:
 
 - A server or PC running NixOS (this setup uses a single-node k3s cluster)
-- Two VPS instances for redundant WireGuard endpoints (AWS EC2 + any OpenBSD VPS)
+- A VPS for the WireGuard endpoint (AWS EC2)
 - A domain name with Cloudflare DNS (required for cert-manager DNS-01 challenge)
 - A Cloudflare API token with DNS edit permissions
 - A Sealed Secrets controller deployed in your cluster (required to decrypt the sealed secrets in this repo.
@@ -248,4 +247,4 @@ terraform/
 - **Sealed Secrets are cluster-specific**: The encrypted secrets in this repo cannot be decrypted outside of the original cluster. Anyone deploying this will need to generate and seal their own secrets.
 - **GPU passthrough**: The NVIDIA GTX 1070 is passed through to either the Windows VM or the NixOS HTB VM — not both simultaneously. Switching requires stopping one VM before starting the other.
 - **Music stack**: Some albums are not available on Soulseek or Deezer and require manual sourcing and/or managing.
-- **WireGuard failover**: Automatic failover between AWS and Vultr is handled at the router level only. Mobile clients require manual endpoint switching.
+- **WireGuard endpoint**: Single AWS endpoint. Clients and the router use the hostname `vpn.sigilos.st`, so an IP change only needs the Cloudflare record updated.

@@ -2,7 +2,7 @@
 resource "cloudflare_record" "vpn" {
   zone_id = var.zone_id
   name    = "vpn"
-  content = "52.15.238.228"
+  content = "3.144.148.229"
   type    = "A"
   ttl     = 60
   proxied = false
