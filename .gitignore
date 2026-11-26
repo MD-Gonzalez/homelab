@@ -2,3 +2,8 @@
 .syncthing.*
 *.bak
 *.swp
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
