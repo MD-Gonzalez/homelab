@@ -6,7 +6,7 @@ A production-style self-hosted infrastructure platform built on Kubernetes, NixO
 
 ![architecture diagram](docs/architecture.svg)
 
-**Security model:** Nothing is exposed to the internet except WireGuard port 51820 on the AWS VPS endpoint. All services are accessed via WireGuard VPN or LAN only. The router keeps the tunnel to AWS up on its own and re-resolves the endpoint if the EC2 IP changes.
+**Security model:** Nothing is exposed to the internet except WireGuard port 51820 on the AWS Lightsail relay. All services are accessed via WireGuard VPN or LAN only. The router keeps the tunnel to the relay up on its own and re-resolves `vpn.sigilos.st` if the relay stops answering.
 
 ## Infrastructure Stack
 
@@ -117,8 +117,8 @@ All secrets are managed via [Sealed Secrets](https://github.com/bitnami-labs/sea
 
 ## Network Architecture
 
-- **AWS EC2 (primary)**: Debian VPS running WireGuard, primary endpoint for all VPN clients
-- **Tunnel watchdog**: Router-side cron script pings the AWS WireGuard IP every minute; if it stops answering, it re-resolves `vpn.sigilos.st` so an EC2 IP change is picked up automatically (the Vultr standby was retired)
+- **AWS Lightsail relay**: Debian 12 Nano instance ($5/month flat) with a static IPv4, running WireGuard; the endpoint for all VPN clients and the router. Declared in `terraform/aws/lightsail.tf`
+- **Tunnel watchdog**: Router-side cron script pings the relay's WireGuard IP every minute; after 3 failed checks in a row it re-resolves `vpn.sigilos.st`, so a relay IP change is picked up automatically (the Vultr standby was retired)
 - **Router (OpenBSD + pf)**: Firewall, NAT, WireGuard client, Unbound DNS resolver
 - **Internal DNS**: All `*.sigilos.st` subdomains resolve to the nginx ingress IP (10.0.0.210) via Unbound on the router
 - **TLS**: cert-manager automatically issues and renews Let's Encrypt certificates via Cloudflare DNS-01 challenge — no ports need to be open for certificate issuance
@@ -159,7 +159,7 @@ Alerts fire to ntfy (self-hosted push notification server) which delivers notifi
 To deploy this infrastructure you will need:
 
 - A server or PC running NixOS (this setup uses a single-node k3s cluster)
-- A VPS for the WireGuard endpoint (AWS EC2)
+- A VPS for the WireGuard endpoint (AWS Lightsail, or any small VPS with a static IP)
 - A domain name with Cloudflare DNS (required for cert-manager DNS-01 challenge)
 - A Cloudflare API token with DNS edit permissions
 - A Sealed Secrets controller deployed in your cluster (required to decrypt the sealed secrets in this repo.
@@ -232,12 +232,12 @@ All cloud infrastructure and DNS is managed declaratively using Terraform, organ
 ```
 terraform/
 ├── cloudflare/    # Cloudflare DNS records for sigilos.st
-└── aws/           # AWS infrastructure (S3, IAM, EC2 role)
+└── aws/           # AWS infrastructure (S3, IAM, Lightsail WireGuard relay)
 ```
 
 **Cloudflare DNS** — all public DNS records for `sigilos.st` declared as code including the VPN endpoint, CloudFront distribution, and ACM certificate validation records.
 
-**AWS** — all AWS resources declared and version-controlled: S3 buckets, IAM users with scoped least-privilege policies, IAM group, EC2 instance role, and all IAM policies. Any infrastructure change goes through `terraform plan` review before `terraform apply`.
+**AWS** — all AWS resources declared and version-controlled: S3 buckets, IAM users with scoped least-privilege policies, IAM group, all IAM policies, and the Lightsail WireGuard relay (instance, static IP, firewall). Any infrastructure change goes through `terraform plan` review before `terraform apply`.
 
 ## Known Issues & Limitations
 

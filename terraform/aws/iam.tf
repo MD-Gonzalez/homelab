@@ -74,39 +74,3 @@ resource "aws_iam_user_policy_attachment" "homelab_backup" {
   user       = aws_iam_user.homelab_backup.name
   policy_arn = aws_iam_policy.homelab_backup.arn
 }
-
-# EC2 instance role for Debian VPN
-resource "aws_iam_role" "debian_vpn" {
-  name = "debian-vpn-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = { Service = "ec2.amazonaws.com" }
-      Action    = "sts:AssumeRole"
-    }]
-  })
-}
-
-resource "aws_iam_policy" "ec2_self_describe" {
-  name = "ec2-self-describe-policy"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Sid      = "DescribeSelf"
-      Effect   = "Allow"
-      Action   = ["ec2:DescribeInstances", "ec2:DescribeTags"]
-      Resource = "*"
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "debian_vpn" {
-  role       = aws_iam_role.debian_vpn.name
-  policy_arn = aws_iam_policy.ec2_self_describe.arn
-}
-
-resource "aws_iam_instance_profile" "debian_vpn" {
-  name = "debian-vpn-role"
-  role = aws_iam_role.debian_vpn.name
-}

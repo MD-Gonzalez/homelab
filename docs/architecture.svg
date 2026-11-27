@@ -1,6 +1,6 @@
 <svg width="100%" viewBox="0 0 680 980" role="img" xmlns="http://www.w3.org/2000/svg">
 <title>Homelab infrastructure architecture diagram</title>
-<desc>Network diagram showing internet flowing through AWS EC2 primary and Vultr standby WireGuard endpoints to an OpenBSD router, then to a NixOS k3s cluster and Proxmox server on the LAN, with client machines below.</desc>
+<desc>Network diagram showing internet flowing through an AWS Lightsail WireGuard relay to an OpenBSD router, then to a NixOS k3s cluster and Proxmox server on the LAN, with client machines below.</desc>
 <defs>
   <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
     <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -40,33 +40,22 @@
   <text class="th" x="340" y="64" text-anchor="middle" dominant-baseline="central">Internet</text>
 </g>
 
-<line x1="300" y1="84" x2="200" y2="118" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)" fill="none"/>
-<line x1="380" y1="84" x2="480" y2="118" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)" fill="none"/>
+<line x1="340" y1="84" x2="340" y2="118" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)" fill="none"/>
 
-<!-- AWS EC2 -->
+<!-- AWS Lightsail relay -->
 <g class="c-blue">
-  <rect x="60" y="118" width="240" height="52" rx="8" stroke-width="0.5"/>
-  <text class="th" x="180" y="136" text-anchor="middle" dominant-baseline="central">AWS EC2 — primary</text>
-  <text class="ts" x="180" y="154" text-anchor="middle" dominant-baseline="central">Debian · WireGuard · IAM role</text>
+  <rect x="190" y="118" width="300" height="52" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="136" text-anchor="middle" dominant-baseline="central">AWS Lightsail — WireGuard relay</text>
+  <text class="ts" x="340" y="154" text-anchor="middle" dominant-baseline="central">Debian · static IP · vpn.sigilos.st</text>
 </g>
 
-<!-- Vultr VPS -->
-<g class="c-blue">
-  <rect x="380" y="118" width="240" height="52" rx="8" stroke-width="0.5"/>
-  <text class="th" x="500" y="136" text-anchor="middle" dominant-baseline="central">Vultr VPS — standby</text>
-  <text class="ts" x="500" y="154" text-anchor="middle" dominant-baseline="central">OpenBSD · WireGuard · pf</text>
-</g>
-<line x1="300" y1="144" x2="380" y2="144" stroke="#888" stroke-width="1" stroke-dasharray="3 2" fill="none"/>
-<text class="ts" x="340" y="138" text-anchor="middle">auto-failover</text>
-
-<line x1="180" y1="170" x2="270" y2="218" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)" fill="none"/>
-<line x1="500" y1="170" x2="410" y2="218" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)" fill="none"/>
+<line x1="340" y1="170" x2="340" y2="218" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)" fill="none"/>
 
 <!-- Router -->
 <g class="c-blue">
   <rect x="160" y="218" width="360" height="52" rx="8" stroke-width="0.5"/>
   <text class="th" x="340" y="236" text-anchor="middle" dominant-baseline="central">OpenBSD router — 10.0.0.1</text>
-  <text class="ts" x="340" y="254" text-anchor="middle" dominant-baseline="central">pf · NAT · Unbound DNS · failover script</text>
+  <text class="ts" x="340" y="254" text-anchor="middle" dominant-baseline="central">pf · NAT · Unbound DNS · tunnel watchdog</text>
 </g>
 
 <!-- LAN bar -->
