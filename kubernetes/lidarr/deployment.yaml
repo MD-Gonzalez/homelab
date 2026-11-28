@@ -17,7 +17,9 @@ spec:
     spec:
       containers:
       - name: lidarr
-        image: youegraillot/lidarr-on-steroids:latest
+        # was youegraillot/lidarr-on-steroids (unmaintained since 2024, Lidarr 2.5):
+        # it can't log into qBittorrent 5.2+, fixed upstream in Lidarr 3.1.3
+        image: lscr.io/linuxserver/lidarr:latest
         imagePullPolicy: IfNotPresent
         env:
         - name: PUID
@@ -35,12 +37,7 @@ spec:
           mountPath: /music
         - name: downloads
           mountPath: /downloads
-        - name: deemix-config
-          mountPath: /config_deemix
       volumes:
-      - name: deemix-config
-        hostPath:
-          path: /var/lib/k8s/deemix
       - name: config
         persistentVolumeClaim:
           claimName: lidarr-config-pvc
