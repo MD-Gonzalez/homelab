@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: jellyseerr
+  name: seerr
   namespace: homelab
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
@@ -19,6 +19,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: jellyseerr
+            name: seerr
             port:
               number: 5055

@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: droppedneedle
+  namespace: homelab
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: droppedneedle
+  template:
+    metadata:
+      labels:
+        app: droppedneedle
+    spec:
+      containers:
+      - name: droppedneedle
+        # Formerly MusicSeerr. v3 requests go straight to slskd/Deemix (no Lidarr).
+        image: droppedneedle/droppedneedle:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8688
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "100"
+        - name: UMASK
+          value: "002"   # group-writable, so Navidrome/Lidarr (gid 100) can read new files
+        - name: PORT
+          value: "8688"
+        - name: TZ
+          value: "America/Argentina/Buenos_Aires"
+        # slskd's completed folder (/media/downloads/complete) as seen inside /data
+        - name: SLSKD_DOWNLOADS_PATH
+          value: "/data/downloads/complete"
+        # ingress-nginx reaches the pod from the k3s pod network
+        - name: TRUSTED_PROXY_IPS
+          value: "10.42.0.0/16"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8688
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          timeoutSeconds: 3
+        volumeMounts:
+        - name: config
+          mountPath: /app/config     # encryption key: back it up
+        - name: cache
+          mountPath: /app/cache      # database (must be a local disk)
+        - name: plugins
+          mountPath: /app/plugins
+        # One mount for library + download folders, so imports are renames.
+        # Library root in Settings: /data/music
+        - name: media
+          mountPath: /data
+      volumes:
+      - name: config
+        hostPath:
+          path: /var/lib/k8s/droppedneedle/config
+          type: DirectoryOrCreate
+      - name: cache
+        hostPath:
+          path: /var/lib/k8s/droppedneedle/cache
+          type: DirectoryOrCreate
+      - name: plugins
+        hostPath:
+          path: /var/lib/k8s/droppedneedle/plugins
+          type: DirectoryOrCreate
+      - name: media
+        hostPath:
+          path: /media

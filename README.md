@@ -37,8 +37,8 @@ A production-style self-hosted infrastructure platform built on Kubernetes, NixO
 | Lidarr | Music management (Deemix integration) |
 | Prowlarr | Indexer management |
 | Bazarr | Subtitle management |
-| Jellyseerr | Media requests |
-| MusicSeerr | Music requests |
+| Seerr | Media requests (movies & TV) |
+| DroppedNeedle | Music requests (formerly MusicSeerr) |
 | qBittorrent | Torrent client |
 | Navidrome | Music streaming |
 | slskd | Soulseek client |

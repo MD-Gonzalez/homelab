@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: jellyseerr
+  name: droppedneedle
   namespace: homelab
 spec:
   selector:
-    app: jellyseerr
+    app: droppedneedle
   ports:
-  - port: 5055
-    targetPort: 5055
+  - port: 8688
+    targetPort: 8688
